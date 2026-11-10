@@ -1,29 +1,42 @@
 name: Build HGhub
 on:
   workflow_dispatch:
+
 jobs:
-  build-desktop:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.platform }}
+  build-windows:
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          ref: v1.2.1
-      - uses: actions/setup-node@v4
+          version: 9
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Install dependencies
-        run: npm install
-      - uses: tauri-apps/tauri-action@v0
+          cache: 'pnpm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Build Tauri Windows App
+        uses: tauri-apps/tauri-action@v0
         with:
           args: --ci
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
         with:
-          name: HGhub-${{ matrix.platform }}
+          name: HGhub-Windows-Installer
           path: |
+            src-tauri/target/release/*.exe
             src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/msi/*.msi
