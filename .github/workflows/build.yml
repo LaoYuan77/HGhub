@@ -12,6 +12,7 @@ jobs:
         with:
           node-version: 20
       - uses: dtolnay/rust-toolchain@stable
+      - run: npm install -g pnpm
       - run: npm install
       - run: npx tauri build
       - uses: actions/upload-artifact@v4
